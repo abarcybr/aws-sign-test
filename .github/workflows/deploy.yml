@@ -4,16 +4,23 @@ name: Deploy for preview
 on: [pull_request]
 
 jobs:
-  preview:
+  deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@master
-
-      - uses: shallwefootball/s3-upload-action@master
-        name: Upload S3
-        id: S3
-        with:
-          aws_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws_bucket: ${{ secrets.S3_BUCKET }}
-          source_dir: "example-lambda"
+      - name: Checkout
+        uses: actions/checkout@master
+      - name: Install Packages
+        run: |
+          curl "https://s3.amazonaws.com/aws-cli/awscli-bundle.zip" -o "awscli-bundle.zip"
+          unzip awscli-bundle.zip
+          sudo ./awscli-bundle/install -i /usr/local/aws -b /usr/local/bin/aws
+          sudo apt-get install jq -y
+      - shell: bash
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          S3_BUCKET: ${{ secrets.S3_BUCKET }}
+        run: |
+          ACCOUNT_ID=$(aws sts get-caller-identity | jq -r '.Account')
+          zip function.zip index.js
+          aws s3api put-object --bucket $BUCKET --key example-function.zip --body function.zip --metadata "x-amz-meta-repo=aws-sign-test,x-amz-meta-check-run-id=1844766117,	x-amz-meta-owner=abarcybr"
