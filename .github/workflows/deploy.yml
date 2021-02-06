@@ -24,4 +24,4 @@ jobs:
           cd example-lambda
           ACCOUNT_ID=$(aws sts get-caller-identity | jq -r '.Account')
           zip function.zip index.js
-          aws s3api put-object --bucket $BUCKET --key example-function.zip --body function.zip --metadata "x-amz-meta-repo=aws-sign-test,x-amz-meta-check-run-id=1844766117,	x-amz-meta-owner=abarcybr"
+          aws s3api put-object --bucket $S3_BUCKET --key example-function.zip --body function.zip --metadata "x-amz-meta-repo=aws-sign-test,x-amz-meta-check-run-id=1844766117,x-amz-meta-owner=abarcybr"
